@@ -37,13 +37,25 @@ def count_calorie_totals_per_elf(lst_of_elves_inventories):
     food_items_per_elf = separate_elves_inventories(lst_of_elves_inventories)
     total_calories_per_elf = {}
     highest_calorie_count = 0
+    second_highest_calorie_count = 0
+    third_highest_calorie_count = 0
 
     for elf, food_items in food_items_per_elf.items():
         total_calories_per_elf[elf] = sum(food_items)
+        # find out who has the most total calories
         if highest_calorie_count < total_calories_per_elf[elf]:
-            highest_calorie_count = total_calories_per_elf[elf] 
-    return total_calories_per_elf, highest_calorie_count
-        
+            third_highest_calorie_count = second_highest_calorie_count # 2nd will move to 3rd place
+            second_highest_calorie_count = highest_calorie_count # 1st will move to 2nd place
+            highest_calorie_count = total_calories_per_elf[elf] # and we have a new first!
+        elif second_highest_calorie_count < total_calories_per_elf[elf]:
+            third_highest_calorie_count = second_highest_calorie_count # 2nd will move to 3rd place
+            second_highest_calorie_count = total_calories_per_elf[elf] # and we have a new second!
+        elif third_highest_calorie_count < total_calories_per_elf[elf]:
+            third_highest_calorie_count = total_calories_per_elf[elf] # and we have a new third!
 
-total_calories_per_elf, highest_calorie_count = count_calorie_totals_per_elf(lst_of_elves_inventories)
-print(highest_calorie_count)
+    top_three_elves_calorie_count =  highest_calorie_count + second_highest_calorie_count + third_highest_calorie_count
+
+    return total_calories_per_elf, top_three_elves_calorie_count   
+
+total_calories_per_elf, top_three_elves_calorie_count = count_calorie_totals_per_elf(lst_of_elves_inventories)
+print(top_three_elves_calorie_count)
