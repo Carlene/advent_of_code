@@ -6,7 +6,7 @@ In case the Elves get hungry and need extra snacks, they need to know which Elf 
 Find the Elf carrying the most Calories. How many total Calories is that Elf carrying?
 '''
 
-with open("advent_of_code_2022/day_1/day_1.txt", "r") as f:
+with open("2022/inputs/day_1.txt", "r") as f:
     lst_of_elves_inventories= f.readlines()
 
 def separate_elves_inventories(lst_of_elves_inventories):
