@@ -22,6 +22,54 @@ def clean_rps_inputs(rps_inputs):
         cleaned_rps_inputs.append(round.replace("\n", ""))
     return cleaned_rps_inputs
 
+def find_which_play_won(opponent_encrypted_play_for_round, opponent_guide, your_encrypted_play_for_round, your_guide):
+    '''
+    Takes in plays made by you and your opponent. 
+    Returns the play that won and the score each player gets for winning or losing.
+    '''
+    # default rules to keep track of
+    winning_points = 6
+    draw_points = 3
+    losing_points = 0
+    # score holders
+    your_score = 0
+    opponent_score = 0
+
+    opponent_play_for_round = opponent_guide[opponent_encrypted_play_for_round]["play"]
+    your_play_for_round = your_guide[your_encrypted_play_for_round]["play"]
+
+    # deal with ties first
+    if your_play_for_round == opponent_play_for_round:
+        your_score = draw_points + your_guide[your_encrypted_play_for_round]["points"]
+        opponent_score = draw_points + opponent_guide[opponent_encrypted_play_for_round]["points"]
+    # rock beats scissors and loses to paper
+    elif your_play_for_round == "rock":
+        if opponent_play_for_round == "scissors":
+            your_score = winning_points + your_guide[your_encrypted_play_for_round]["points"]
+            opponent_score = losing_points + opponent_guide[opponent_encrypted_play_for_round]["points"]
+        elif opponent_play_for_round == "paper":
+            your_score = losing_points + your_guide[your_encrypted_play_for_round]["points"]
+            opponent_score = winning_points + opponent_guide[opponent_encrypted_play_for_round]["points"]
+    # scissors beats to paper and loses with rock
+    elif your_play_for_round == "scissors":
+        if opponent_play_for_round == "paper":
+            your_score = winning_points + your_guide[your_encrypted_play_for_round]["points"]
+            opponent_score = losing_points + opponent_guide[opponent_encrypted_play_for_round]["points"]
+        elif opponent_play_for_round == "rock":
+            your_score = losing_points + your_guide[your_encrypted_play_for_round]["points"]
+            opponent_score = winning_points + opponent_guide[opponent_encrypted_play_for_round]["points"]
+    # paper loses to scissors and beats rock
+    elif your_play_for_round == "paper":
+        if opponent_play_for_round == "rock":
+            your_score = winning_points + your_guide[your_encrypted_play_for_round]["points"]
+            opponent_score = losing_points + opponent_guide[opponent_encrypted_play_for_round]["points"]
+        elif opponent_play_for_round == "scissors":
+            your_score = losing_points + your_guide[your_encrypted_play_for_round]["points"]
+            opponent_score = winning_points + opponent_guide[opponent_encrypted_play_for_round]["points"]
+
+    return your_score, opponent_score
+
+
 def strategy_guide(round):
     '''
     Takes in a single round of RPS and calculates the score for each player based on current rules.
@@ -40,28 +88,17 @@ def strategy_guide(round):
         }
 
     # opponent input is the first position, your input is the third
-    if round[0] in opponent_guide and round[2] in your_guide:
-        opponent_play_for_round = opponent_guide[round[0]]["play"]
-        your_play_for_round = your_guide[round[2]]["play"]
-        # if opponent_play_for_round == "rock":
+    opponent_encrypted_play_for_round = round[0]
+    your_encrypted_play_for_round = round[2]
 
-def find_which_play_won(opponent_play_for_round, your_play_for_round):
-    '''
-    Takes in plays made by you and your opponent. 
-    Returns the play that won and the score each player gets for winning or losing.
-    '''
-    pass
-    # score_per_player = {}
-
-    # if your_play_for_round == "Rock":
-    #     if opponent_play_for_round == "Scissors":
-    #         return 
-
-    # else:
-    #     print(f"{round[0]} and/or {round[2]} input is not in the strategy guide, please check RPS inputs.")
-    #     return False, 0
-
-
+    if your_encrypted_play_for_round in your_guide and opponent_encrypted_play_for_round in opponent_guide:
+        your_score, opponent_score = find_which_play_won(
+            opponent_encrypted_play_for_round, 
+            opponent_guide, 
+            your_encrypted_play_for_round, 
+            your_guide
+        )
+    return your_score, opponent_score
 
 
 def find_rps_scores(rps_inputs):
@@ -71,6 +108,15 @@ def find_rps_scores(rps_inputs):
     '''
     # first remove new lines from rps data
     cleaned_rps_inputs = clean_rps_inputs(rps_inputs)
+    # total score holders
+    your_total_score = 0
+    opponent_total_score = 0 
 
     for round in cleaned_rps_inputs:
-        pass
+        your_score, opponent_score = strategy_guide(round)
+        your_total_score += your_score
+        opponent_total_score += opponent_score
+    
+    return {"your_score": your_total_score, "opponent_score": opponent_total_score}
+
+print(find_rps_scores(rps_inputs))

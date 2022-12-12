@@ -8,6 +8,7 @@ Find the Elf carrying the most Calories. How many total Calories is that Elf car
 
 with open("2022/inputs/day_1.txt", "r") as f:
     lst_of_elves_inventories= f.readlines()
+    f.close()
 
 def separate_elves_inventories(lst_of_elves_inventories):
     '''
