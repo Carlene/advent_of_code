@@ -43,6 +43,7 @@ def split_rucksacks_into_compartments(rucksacks):
     Takes a list of a bunch of rucksacks and splits each one into two compartments
     Returns the split up rucksacks.
     '''
+
     rucksack_priority_by_compartment = {"first_compartment": {}, "second_compartment": {}}
     rucksack_count = 1
 
@@ -60,12 +61,33 @@ def split_rucksacks_into_compartments(rucksacks):
         inside_second_compartment[rucksack_count] = rucksack_priority[end_of_first_compartment:]
         inside_second_compartment[rucksack_count] = set(inside_second_compartment[rucksack_count])
         rucksack_count += 1
-
     return rucksack_priority_by_compartment
 
+def split_rucksacks_into_groups(rucksacks):
+    '''
+    Takes a list of a bunch of rucksacks and splits every three rucksacks into one group.
+    Returns the split up rucksacks.
+    '''
+    rucksack_priorities_by_group = {}
+    rucksack_count = 0
+    group_number = 1
+
+    for rucksack in rucksacks:
+        rucksack_priority = find_item_priority(rucksack)
+        # if we're on the third rucksack for the current group, move to the next group unless it's the zeroth or first rucksack
+        if rucksack_count % 3 == 0 and rucksack_count != 0 and rucksack_count != 1:
+            group_number += 1
+        if group_number in rucksack_priorities_by_group:
+            rucksack_priorities_by_group[group_number].append(set(rucksack_priority))
+        else:
+            rucksack_priorities_by_group[group_number] = []
+            rucksack_priorities_by_group[group_number].append(set(rucksack_priority))
+        rucksack_count += 1
+
+    return rucksack_priorities_by_group
 
 
-def find_similar_item_priority_across_rucksacks(rucksacks):
+def find_duped_item_priority_across_compartments(rucksacks):
     '''
     Find the duplicate item in each rucksack across both compartments.
     Returns the summed up item priorities of all duplicate items.
@@ -83,4 +105,25 @@ def find_similar_item_priority_across_rucksacks(rucksacks):
 
     return total_duped_priorities_across_compartments
 
-print(find_similar_item_priority_across_rucksacks(rucksacks))
+
+def find_duped_item_priority_across_groups(rucksacks):
+    '''
+    Find the duplicate item in each rucksack across groups.
+    Returns the summed up item priorities of all duplicate items.
+    '''
+    rucksack_priorities_by_group = split_rucksacks_into_groups(rucksacks)
+    total_duped_priorities_across_groups = 0
+
+    for group_number, item_priorities in rucksack_priorities_by_group.items():
+        if len(item_priorities) == 3:
+            # check to see which item the three rucksacks have in common
+            tripled_priority_list = list(item_priorities[0].intersection(item_priorities[1]).intersection(item_priorities[2]))
+            # there should only be one duped item, but checking in case
+            if len(tripled_priority_list) == 1:
+                tripled_item_priority = tripled_priority_list[0]
+                total_duped_priorities_across_groups += tripled_item_priority
+
+    return total_duped_priorities_across_groups
+
+# print(find_duped_item_priority_across_compartments(rucksacks))
+print(find_duped_item_priority_across_groups(rucksacks))
