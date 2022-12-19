@@ -35,10 +35,13 @@ def clean_starting_stacks(starting_stacks, spaces = 3, given_amount_of_stacks = 
         # add each crate to it's proper stack in order
         while amount_of_stacks != 0:
             crate = row_of_crates[starting_crate_placement:ending_crate_placement]
-            crate = crate.strip()
+            crate = crate.strip().strip("[").strip("]")
 
             # the crates that denote the stack number are the end of the row, so ignore 
             if crate.isdigit():
+                pass
+            # skip empty crates
+            elif len(crate) == 0:
                 pass
             else:
                 if stack_column not in stack_by_column:
@@ -72,15 +75,15 @@ def break_up_procedure(procedure):
 
     # "from" shows us where the amount of moved crates will come from
     from_keyword = "from"
-    from_stack_position = int(procedure.find(from_keyword) + len(from_keyword) + 1) # plus 1 to account for the extra space
-    from_stack = int(procedure[from_stack_position])
+    from_stack_column_position = int(procedure.find(from_keyword) + len(from_keyword) + 1) # plus 1 to account for the extra space
+    from_stack_column = int(procedure[from_stack_column_position])
 
     # and "to" tells us where the moved crates are going, starting with the top of the stack
     to_keyword = "to"
-    to_stack_position = int(procedure.find(to_keyword) + len(to_keyword) + 1) # plus 1 to account for the extra space
-    to_stack = int(procedure[to_stack_position])
+    to_stack_column_position = int(procedure.find(to_keyword) + len(to_keyword) + 1) # plus 1 to account for the extra space
+    to_stack_column = int(procedure[to_stack_column_position])
 
-    return amount_of_crates_to_move, from_stack, to_stack
+    return amount_of_crates_to_move, from_stack_column, to_stack_column
 
 
 def follow_one_procedure(procedure, stacks):
@@ -88,36 +91,41 @@ def follow_one_procedure(procedure, stacks):
     apply the procedure to the current configuration of stacked crates
     return the configuration of crates after the procedure
     '''
-    amount_of_crates_to_move, from_stack, to_stack = break_up_procedure(procedure)
+    amount_of_crates_to_move, from_stack_column, to_stack_column = break_up_procedure(procedure)
 
-    crates_to_move = stacks[from_stack]
+    # find the stack of crates we need to move
+    crates_to_move = stacks[from_stack_column][:amount_of_crates_to_move]
+    # reverse the stack to add to the start of the stack the crates are going to
+    crates_to_move.reverse() 
+    stacks[to_stack_column] = crates_to_move + stacks[to_stack_column]
 
+    # remove the moved crates from the original stack
     for crate in crates_to_move:
-        if len(crate) == 0:
-            continue
-        stacks[to_stack] = [crate] + stacks[to_stack] 
-        stacks[from_stack].remove(crate)
-        amount_of_crates_to_move -= 1
+        stacks[from_stack_column].remove(crate)
 
     return stacks
 
 
 def go_through_rearrangement_procedure():
+    '''
+    apply the entire rearrangement procedure instructions to the stacks of crates
+    returns the new stacks, along with the crates at the top of each stack
+    '''
     starting_stacks, rearrangement_procedures = separate_starting_stacks_from_rearrangement_procedures()
     stacks_by_column = clean_starting_stacks(starting_stacks)
     top_crates = []
 
-    for procedure in rearrangement_procedures[:4]:
+    # go through each procedure
+    for procedure in rearrangement_procedures:
         stacks_by_column = follow_one_procedure(procedure, stacks_by_column)
 
+    # and find the crate at the top of each stack
     for i in range(len(stacks_by_column)):
-        top_crates.append(stacks_by_column[i + 1][0])
+        crates = stacks_by_column[i + 1]
+        if len(crates) > 0: # ignore empty stacks
+            top_crates.append(crates[0])
     
     return stacks_by_column, top_crates
 
-
 stacks_by_column, top_crates = go_through_rearrangement_procedure()
-print(top_crates)
-# starting_stacks, rearrangement_procedures = show_the_shit()
-# print(starting_stacks)
-# # print(clean_starting_stacks(starting_stacks))
+print("".join(top_crates))
