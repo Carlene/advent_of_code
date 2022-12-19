@@ -86,17 +86,19 @@ def break_up_procedure(procedure):
     return amount_of_crates_to_move, from_stack_column, to_stack_column
 
 
-def follow_one_procedure(procedure, stacks):
+def follow_one_procedure(procedure, stacks, crane = 9000):
     ''' 
     apply the procedure to the current configuration of stacked crates
     return the configuration of crates after the procedure
+    crane: int, the model of crane that's moving the crates. the 9001 can grab multiple crates at once, preserving order
     '''
     amount_of_crates_to_move, from_stack_column, to_stack_column = break_up_procedure(procedure)
 
     # find the stack of crates we need to move
     crates_to_move = stacks[from_stack_column][:amount_of_crates_to_move]
-    # reverse the stack to add to the start of the stack the crates are going to
-    crates_to_move.reverse() 
+    if crane == 9000:
+        # the CrateMover 9000 can only move one crate at a time, so need to reverse the order of the stack
+        crates_to_move.reverse() 
     stacks[to_stack_column] = crates_to_move + stacks[to_stack_column]
 
     # remove the moved crates from the original stack
@@ -106,7 +108,7 @@ def follow_one_procedure(procedure, stacks):
     return stacks
 
 
-def go_through_rearrangement_procedure():
+def go_through_rearrangement_procedure(crane = 9000):
     '''
     apply the entire rearrangement procedure instructions to the stacks of crates
     returns the new stacks, along with the crates at the top of each stack
@@ -117,7 +119,7 @@ def go_through_rearrangement_procedure():
 
     # go through each procedure
     for procedure in rearrangement_procedures:
-        stacks_by_column = follow_one_procedure(procedure, stacks_by_column)
+        stacks_by_column = follow_one_procedure(procedure, stacks_by_column, crane)
 
     # and find the crate at the top of each stack
     for i in range(len(stacks_by_column)):
@@ -127,5 +129,5 @@ def go_through_rearrangement_procedure():
     
     return stacks_by_column, top_crates
 
-stacks_by_column, top_crates = go_through_rearrangement_procedure()
+stacks_by_column, top_crates = go_through_rearrangement_procedure(crane = 9001)
 print("".join(top_crates))
